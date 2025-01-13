@@ -1,39 +1,74 @@
 import { Avatar, Box, Button, Modal, TextField } from "@mui/material"
 import { deepPurple } from "@mui/material/colors"
-import {  useContext, useRef, useState } from "react";
-import { userCotext } from "./models/User";
+import {  useContext, useEffect, useRef, useState } from "react";
+import {  userCotext } from "../models/User";
 
-const Profil=()=>{
+const Profil= ()=>{
     
-    const [siteUser,DispachSiteUser]=useContext(userCotext)
+    const [userSite,DispachSiteUser]=useContext(userCotext)
     const[toUpdate,setToUpdate]=useState(false)
+    const[letter,setLetter]=useState(userSite._name||" ")
     const name = useRef<HTMLInputElement>(null);
-    const familyName = useRef<HTMLInputElement>(null);
-    const email = useRef<HTMLInputElement>(null);
+    const familyName = useRef<HTMLInputElement>();
+    const email = useRef<HTMLInputElement>();
     const address = useRef<HTMLInputElement>(null);
     const phone = useRef<HTMLInputElement>(null);
     const password = useRef<HTMLInputElement>(null);
     
     
     const upDateDetails=()=>{setToUpdate(true)}
-    const handleSubmit=()=>{setToUpdate(false)
+    const toserver=async()=>{
+      try{
+        const res = await fetch('http://localhost:3000/api/user', {
+        method: 'PUT',        
+          headers: {
+            'Content-Type': 'application/json',
+             "user-id":JSON.stringify(1) }
+            ,body: JSON.stringify(userSite)})
+          const  data= await res.json()
+          console.log(data.user);
+          if(res.status==403){console.log("403 in profil update without id");
+          }
+           if (!res.ok) { throw new Error(`fetch error ${res.status}`) 
+          }
+           
+      }
         
-        
-        DispachSiteUser({type:"UPDATE",field:{_name:name.current?.value||siteUser._name
-            ,_familyname:familyName.current?.value||siteUser._familyname,
-            _address:address.current?.value||siteUser._address
-            ,_email:email.current?.value||siteUser._email,
-            _password:password.current?.value||siteUser._password
-            ,_phone:phone.current?.value||siteUser._phone 
-         } 
-        })
-        localStorage.setItem("userLetter",(name.current?.value||siteUser._name+"")[0])
+      catch(e)
+          {
+            console.log(e);
+            
+          }
     }
+    const handleSubmit= ()=>{
+      setToUpdate(false)
+       DispachSiteUser({
+        type: "UPDATE", field: {
+          _name: name.current?.value||userSite._name,
+          _familyname: familyName.current?.value||userSite._familyname,
+          _address: address.current?.value||userSite._address,
+          _email: email.current?.value||userSite._email,
+          _password: password.current?.value||userSite._password,
+          _phone: phone.current?.value||userSite._phone
+        }
+      })
+      //this is not change alwayes!!
+    }
+    useEffect(() => {
+      if(userSite._id==0){return}
+      toserver()
+     console.log("profil now site user",userSite);     
+     setLetter((userSite._name??" ")[0])
+     console.log("letter",letter);
+ },[userSite])
+ useEffect(() => {
+  setLetter(" ") 
+ })
     return (<>
 
       
         <Button onClick={upDateDetails} sx={{borderRadius:"30px"}} >    
-          <Avatar sx={{ bgcolor: deepPurple[500] }}> {localStorage.getItem("userLetter")}</Avatar>
+          <Avatar sx={{ bgcolor: deepPurple[500] }}> {letter}</Avatar>
         </Button>
     <Modal open={toUpdate} sx={{  width: 300,position:"fixed",left:"300px"}}>
     <Box >

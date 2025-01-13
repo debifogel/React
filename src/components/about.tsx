@@ -1,0 +1,1 @@
+export const About=()=>{return(<><h1>in about</h1></>)}

@@ -1,6 +1,7 @@
 import { createContext, Dispatch } from "react";
 
  type User={
+    _id?:number
     _name?:string,
     _familyname?:string,
     _email?:string,
@@ -11,6 +12,7 @@ import { createContext, Dispatch } from "react";
 export type UserAction =
  { type:"POST"|"UPDATE"|"DELETE" ; field:User }
  export const initialState: User = {
+    _id:0,
     _name: '',
     _familyname: '',
     _email: '',
@@ -18,17 +20,16 @@ export type UserAction =
     _address: '',
     _phone: ''
 }; 
+
  function UserReducer(state:User,op:UserAction)
 {
    switch (op.type) {
-    case "POST":
-        
+    case "POST":       
         return{...op.field}
-        case "UPDATE":
-            console.log("user",state);
+        case "UPDATE": 
+            console.log("update",op.field);
             
-            return{...state,...op.field}
-        
+            return{...state,...op.field}    
         case "DELETE":
             return initialState
     default:
@@ -37,4 +38,5 @@ export type UserAction =
 }
 export { UserReducer }
 export type { User }
+
 export const userCotext = createContext<[User, Dispatch<UserAction>]>([{} as User, () => { }]);

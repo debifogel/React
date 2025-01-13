@@ -1,32 +1,46 @@
-import {   Button, Modal } from "@mui/material"
-import { ChangeEvent, FormEvent, useContext, useState } from "react"
-import { userCotext } from "./models/User"
-
-
-
+import {   Button, Input, Modal,  } from "@mui/material"
+import { ChangeEvent, FormEvent,useContext, useState } from "react"
+import { userCotext } from "../models/User"
 const Login=()=>{
-  const [,DispachSiteUser]=useContext(userCotext)
-  let  [user,setuser]=useState({name:"",password:""})
+  const [userSite,DispachSiteUser]=useContext(userCotext)
+  let  [user,setuser]=useState({name:"",password:"",email:""})
  //let  [password,setpassword]=useState("")
  const [toLog,setToLog]=useState(false)
 const handleClose=()=>{setToLog(false)}
-const handleSubmit=(e: FormEvent)=>
+const handleSubmit=async (e: FormEvent)=>
 {
   
   handleClose()
     console.log(user);   
-    e.preventDefault()
-    let user2=JSON.stringify(localStorage.getItem("user"))
-    let user3=JSON.stringify(user)
-    if(!user2||(user3!=user2))
-    {
-      localStorage.setItem("Login","false")
-      localStorage.setItem("user",JSON.stringify(user))
-      DispachSiteUser({type:"POST",field:{_name:user.name,_password:user.password}})
-      localStorage.setItem("userLetter",user.name[0])
-    }
-    
+  e.preventDefault()
+  try {
+       const res= await fetch('http://localhost:3000/api/user/login',
+        {
+           method: 'POST',
+            body: JSON.stringify({
+                _email:user.email,
+                _password:user.password
+            }),
+            headers: { 'Content-Type': 'application/json' }
+          }
+        )
+        const data = await res.json()
+        if (res.status == 401) { alert('מייל  או סיסמא לא נכונים') }
+            else if (!res.ok) {console.log("in not good user");
+             throw new Error(`fetch error ${res.status}`) }
+          
+          
 
+            //setuser(data.user)
+          DispachSiteUser({type:"POST",field:data.user})
+          console.log(userSite);
+               
+      }
+      catch(e)
+      {
+         console.log(e+"fetch fail");
+         
+      }
 
 }
 const Changeuser=(e:ChangeEvent<HTMLInputElement>)=>{
@@ -37,33 +51,24 @@ const Changeuser=(e:ChangeEvent<HTMLInputElement>)=>{
   
    const LogTosite=()=>{
     setToLog(true)
-    localStorage.setItem("Login","true")
+     localStorage.setItem("Login","true")
    }
     return(<>
     
-      {localStorage.getItem("Login")?"":
+      {userSite._id==0&&
       <Button variant="outlined" onClick={LogTosite}>Log in</Button>}
     { 
-   <Modal open={toLog}>
+   <Modal open={toLog} >
     <form onSubmit={handleSubmit}>
-   <input type="text" value={user.name} id="name" onChange={Changeuser}/>
-   <input type="text" value={user.password} id="password" onChange={Changeuser}/>
+   <Input type="text" value={user.name} id="name" onChange={Changeuser}/>
+   <Input type="text" value={user.password} id="password" onChange={Changeuser}/>
+   <Input type="email" value={user.email} id="email" onChange={Changeuser}/>
    <button type="submit">Login</button>
    </form>
    </Modal>}
-  
-      
-
-
-
-
-    
-  
- {/* <h1>close the log and add pratim and avater</h1> */}
+  {/* <h1>close the log and add pratim and avater</h1> */}
   </>
   )
-
-
 }
 export default Login
 

@@ -1,0 +1,1 @@
+export const History=()=>{return(<><h1>hi hi hi</h1></>)}
